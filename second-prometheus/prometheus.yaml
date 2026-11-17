@@ -1,0 +1,55 @@
+# A second Prometheus for trying out several sets of programs on one cluster.
+# It is managed by the Prometheus Operator that Kamerton's chart installs and
+# takes only rules labelled team=b, so Kamerton has to label the rules of
+# systems that use this set (it learns the label from this resource).
+#   kubectl apply -f second-prometheus/prometheus.yaml
+#   kubectl delete namespace team-b   # removes it again
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-b
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: team-b
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: team-b
+  namespace: team-b
+spec:
+  image: quay.io/prometheus/prometheus:v3.16.0-distroless
+  version: v3.16.0-distroless
+  replicas: 1
+  serviceAccountName: prometheus
+  evaluationInterval: 15s
+  ruleSelector:
+    matchLabels:
+      team: b
+  ruleNamespaceSelector: {}
+  # Without a monitor selector the operator does not write the configuration
+  # (and the rule files are not loaded). Nothing carries this label: no scraping.
+  serviceMonitorSelector:
+    matchLabels:
+      team: b
+  resources:
+    requests:
+      memory: 200Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: team-b
+  labels:
+    app.kubernetes.io/name: prometheus
+spec:
+  selector:
+    prometheus: team-b
+  ports:
+    - name: web
+      port: 9090
+      targetPort: 9090

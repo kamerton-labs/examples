@@ -1,0 +1,3 @@
+# Local copies with real chat IDs and addresses
+*.local.yaml
+.DS_Store

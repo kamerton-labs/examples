@@ -1,0 +1,45 @@
+# Helm values for the OpenTelemetry Demo when it is observed by Kamerton.
+#
+# The demo's bundled backends are switched off; its collector forwards all
+# signals to the collector managed by Kamerton, which computes span metrics
+# and writes to Prometheus, Loki and Tempo.
+#
+#   helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+#   helm upgrade --install otel-demo open-telemetry/opentelemetry-demo \
+#     --version 0.42.6 -n otel-demo --create-namespace \
+#     -f otel-demo/values-demo.yaml
+jaeger:
+  enabled: false
+prometheus:
+  enabled: false
+grafana:
+  enabled: false
+opensearch:
+  enabled: false
+
+# The demo gives the accounting service 160Mi and it lives at 90-99% of that
+# limit (it has been OOM-killed with no fault flag on), which keeps the
+# "memory near limit" alert firing. More room removes the alert's cause.
+components:
+  accounting:
+    resources:
+      limits:
+        memory: 256Mi
+
+opentelemetry-collector:
+  config:
+    exporters:
+      otlp_grpc/kamerton:
+        endpoint: kamerton-otel-collector.kamerton:4317
+        tls:
+          insecure: true
+    service:
+      pipelines:
+        traces:
+          exporters: [otlp_grpc/kamerton]
+        metrics:
+          # span metrics are computed by Kamerton's collector, not here
+          receivers: [otlp, kafkametrics, prometheus/ad]
+          exporters: [otlp_grpc/kamerton]
+        logs:
+          exporters: [otlp_grpc/kamerton]
