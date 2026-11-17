@@ -2,7 +2,7 @@
 # Apply as a custom resource:   kubectl apply -n kamerton -f otel-demo/system.yaml
 #
 # Secrets (Telegram bot token, SMTP password) are NOT stored here. Both are
-# entered in the UI («Каналы»): the bot token goes to Secret kamerton-telegram
+# entered in the UI ("Channels"): the bot token goes to Secret kamerton-telegram
 # (key bot-token), the SMTP password to Secret kamerton-smtp (key password),
 # and the UI can manage the receivers below. Or create the Secrets yourself:
 #   kubectl -n kamerton create secret generic kamerton-telegram --from-literal=bot-token=<token>
