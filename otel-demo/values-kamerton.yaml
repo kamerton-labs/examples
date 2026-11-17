@@ -1,23 +1,14 @@
 # Helm values for running Kamerton next to the OpenTelemetry Demo on a small
-# local cluster (kind, k3s, colima). Uses a locally built image.
+# local cluster (kind, k3s, colima).
 #
 # Run from a clone of https://github.com/kamerton-labs/kamerton, with this
 # repository cloned next to it (../examples):
-#   docker build -t kamerton:dev .
-#   # make the image visible to the cluster, for example:
-#   #   kind load docker-image kamerton:dev
-#   #   docker save kamerton:dev | sudo k3s ctr images import -
 #   helm install kamerton ./deploy/helm/kamerton -n kamerton --create-namespace \
 #     --dependency-update -f ../examples/otel-demo/values-kamerton.yaml
 # The UI is reached through `kubectl -n kamerton port-forward svc/kamerton 8080`,
 # so links in notifications point there. Change it when you expose Kamerton
 # through an ingress.
 externalURL: http://localhost:8080
-
-image:
-  repository: kamerton
-  tag: dev
-  pullPolicy: IfNotPresent
 
 kube-prometheus-stack:
   prometheus:
