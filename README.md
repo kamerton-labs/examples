@@ -40,6 +40,13 @@ cd kamerton
      -f ../examples/otel-demo/values-demo.yaml
    ```
 
+   Wait until the shop is up. Described while its services are still
+   starting, it greets you with alerts about its own start-up:
+
+   ```sh
+   kubectl -n otel-demo wait --for=condition=Available deployment --all --timeout=10m
+   ```
+
 3. Describe the shop to Kamerton and open the UI:
 
    ```sh
