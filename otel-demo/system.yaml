@@ -66,6 +66,14 @@ spec:
       critical: true
       description: Envoy entry point for all user traffic
       dependsOn: [frontend]
+      operations:
+        # The demo's checkout confirms a write to Kafka only when the next order is written
+        # (its producer uses acks=NoResponse), so at the load generator's pace a checkout
+        # often outlasts Envoy's 15 s and the proxy answers 504 to a few percent of POSTs
+        # with nothing broken. A failing shop still shows here: GET keeps the default.
+        - name: POST
+          errorRate:
+            threshold: 0.2
 
     - name: frontend
       type: http
@@ -80,6 +88,11 @@ spec:
       critical: true
       description: Places orders
       dependsOn: [cart, currency, email, payment, product-catalog, shipping, orders]
+      latency:
+        # PlaceOrder waits for the next order before its write to Kafka is confirmed (see
+        # frontend-proxy above): 20-90 s at the load generator's pace, with nothing broken.
+        # The threshold sits above that wait; the services checkout calls keep their own.
+        thresholdMs: 180000
       errorRate:
         perOperation: true
       operations:
